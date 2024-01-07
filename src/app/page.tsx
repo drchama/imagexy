@@ -1,95 +1,117 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+
+import DownloadIcon from "@mui/icons-material/Download";
+import { AppBar, Box, Button, CircularProgress, Container, Paper, Stack, Toolbar, Typography } from "@mui/material";
+import html2canvas from "html2canvas";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Dropzone from "react-dropzone";
+import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
+import { ImageTableComponent } from "./ImageTableComponent";
+import { TransformControls } from "./TransformControls";
+import { createImageCells } from "./createImageCells";
+import { ImageCell, ImageTable, createImageTableWithCells } from "./imageTable";
+import { downloadFile } from "./downloadFile";
 
 export default function Home() {
+  const transformComponentRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const tableRef = useRef<HTMLDivElement | null>(null);
+  const [cells, setCells] = useState<ImageCell[]>([]);
+  const [table, setTable] = useState<ImageTable | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const onDrop = useCallback(async (files: File[]) => {
+    setLoading(true);
+    try {
+      setCells(await createImageCells(files));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const zoomIn = useCallback(() => {
+    transformComponentRef.current?.zoomIn();
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    transformComponentRef.current?.zoomOut();
+  }, []);
+
+  const resetTransform = useCallback(() => {
+    transformComponentRef.current?.resetTransform();
+  }, []);
+
+  const download = useCallback(async () => {
+    if (!tableRef.current) {
+      return;
+    }
+    const canvas = await html2canvas(tableRef.current);
+    downloadFile(canvas.toDataURL("image/jpg", 0.8), "imagexy.jpg");
+  }, []);
+
+  useEffect(() => {
+    setTable(cells.length > 0 ? createImageTableWithCells(cells) : null);
+  }, [cells]);
+
+  useEffect(() => {
+    transformComponentRef.current?.resetTransform();
+  }, [table]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    <Stack sx={{ height: "100vh" }}>
+      <Box sx={{ flex: 0 }}>
+        <AppBar position="static">
+          <Toolbar variant="dense">
+            <Typography variant="h6" color="inherit" sx={{ textTransform: "uppercase" }}>
+              ImageXY
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      </Box>
+      <Box sx={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <Dropzone onDrop={onDrop}>
+          {({ getRootProps, getInputProps }) => {
+            const { onClick, ...rootProps } = getRootProps();
+            return (
+              <Box sx={{ height: "100%", width: "100%" }} {...rootProps}>
+                <input {...getInputProps()} />
+                {loading ? (
+                  <Box sx={{ alignItems: "center", display: "flex", height: "100%", justifyContent: "center", width: "100%" }}>
+                    <CircularProgress />
+                  </Box>
+                ) : table ? (
+                  <TransformWrapper centerOnInit={true} maxScale={16} minScale={0.5} ref={transformComponentRef}>
+                    <TransformComponent wrapperStyle={{ height: "100%", padding: "16px", width: "100%" }}>
+                      <Paper>
+                        <Box ref={tableRef}>
+                          <ImageTableComponent table={table} />
+                        </Box>
+                      </Paper>
+                    </TransformComponent>
+                  </TransformWrapper>
+                ) : (
+                  <Box sx={{ alignItems: "center", display: "flex", height: "100%", justifyContent: "center", width: "100%" }}>
+                    <Container>
+                      <Typography sx={{ opacity: "0.8" }}>
+                        This is an application that plots the images generated by Stable Diffusion onto an X/Y plot. Multiple image files can be dragged and dropped onto this page to be plotted. The
+                        file name format for the image files should be xxxxx_yyyyy_zzzzz.jpeg. xxxxx represents the label for the X axis, while yyyyy represents the label for the Y axis. zzzzz
+                        represents the index of the image. The file extension, i.e., the image format, can be any format supported by the web browser.
+                      </Typography>
+                    </Container>
+                  </Box>
+                )}
+              </Box>
+            );
+          }}
+        </Dropzone>
+        <Paper sx={{ position: "absolute", left: "24px", bottom: "24px", zIndex: 1 }}>
+          <TransformControls zoomIn={zoomIn} zoomOut={zoomOut} resetTransform={resetTransform} />
+        </Paper>
+        <Box sx={{ position: "absolute", right: "24px", bottom: "24px", zIndex: 1 }}>
+          <Button variant="contained" onClick={download} size="large" startIcon={<DownloadIcon />}>
+            Download Image
+          </Button>
+        </Box>
+      </Box>
+    </Stack>
+  );
 }
