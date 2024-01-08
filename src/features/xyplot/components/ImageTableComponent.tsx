@@ -1,5 +1,5 @@
 import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableRow } from "@mui/material";
-import { ImageTable } from "./imageTable";
+import { ImageTable } from "../ImageTable";
 
 export type ImageTableComponentProps = {
   table: ImageTable;
@@ -14,13 +14,13 @@ export const ImageTableComponent = ({ table }: ImageTableComponentProps) => {
             <TableCell></TableCell>
             {table.xLabels.map((xLabel, xIndex) => (
               <TableCell key={xIndex} sx={{ fontWeight: "600", textAlign: "center", textTransform: "uppercase" }}>
-                {xLabel}
+                {xLabel.raw}
               </TableCell>
             ))}
           </TableRow>
           {table.yLabels.map((yLabel, yIndex) => (
             <TableRow key={yIndex}>
-              <TableCell sx={{ fontWeight: "600", textAlign: "center", textTransform: "uppercase" }}>{yLabel}</TableCell>
+              <TableCell sx={{ fontWeight: "600", textAlign: "center", textTransform: "uppercase" }}>{yLabel.raw}</TableCell>
               {table.table[yIndex].map((cells, xIndex) => (
                 <TableCell key={xIndex}>
                   <Stack>
@@ -28,21 +28,21 @@ export const ImageTableComponent = ({ table }: ImageTableComponentProps) => {
                       {cells.map((cell, index) => (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          alt={cell.name}
+                          alt={cell.fileName}
                           key={index}
                           src={cell.data}
                           style={{
                             objectFit: "contain",
-                            maxHeight: "256px",
-                            maxWidth: "256px",
+                            maxHeight: "196px",
+                            maxWidth: "196px",
                           }}
                         />
                       ))}
                     </Stack>
-                    <Stack direction="row" flexWrap="wrap" sx={{ fontSize: "80%", fontWeight: 600, textTransform: "uppercase" }}>
-                      <Box>{table.xLabels[xIndex]}</Box>
+                    <Stack direction="row" flexWrap="wrap" sx={{ fontWeight: 600, textTransform: "uppercase" }}>
+                      <Box>{table.xLabels[xIndex].raw}</Box>
                       <Box>/</Box>
-                      <Box>{yLabel}</Box>
+                      <Box>{yLabel.raw}</Box>
                     </Stack>
                   </Stack>
                 </TableCell>
