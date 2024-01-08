@@ -1,6 +1,7 @@
 import { Container, LinearProgress, Stack, Typography } from "@mui/material";
-import { Progress } from "../createImageTableCells";
 import { useMemo } from "react";
+import { Progress } from "../hooks/useLoadImageFiles";
+
 export type LoadingProps = {
   progress: Progress;
 };
@@ -12,7 +13,7 @@ export const Loading = ({ progress }: LoadingProps) => {
 
   return (
     <Container maxWidth="md">
-      <Stack alignItems="center" gap={1}>
+      <Stack gap={1}>
         <LinearProgress variant="determinate" value={progressValue} sx={{ width: "100%" }} />
         <Typography fontWeight={600}>Loading {progress?.currentFile?.name}</Typography>
       </Stack>
