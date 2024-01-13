@@ -5,7 +5,7 @@ export type ImageLabel = {
 };
 
 export const parseImageLabel = (labelStr: string): ImageLabel => {
-  const match = labelStr.match(/^(.*?)(\d+)$/);
+  const match = labelStr.match(/^(.*?)(\d+\.?\d*)$/);
   if (!match) {
     return { raw: labelStr, prefix: labelStr, suffix: "" };
   }
@@ -16,7 +16,7 @@ export const compareImageLabels = (aLabel: ImageLabel, bLabel: ImageLabel): numb
   if (aLabel.prefix !== bLabel.prefix) {
     return aLabel.prefix.localeCompare(bLabel.prefix);
   }
-  return (parseInt(aLabel.suffix) || 0) - (parseInt(bLabel.suffix) || 0);
+  return (parseFloat(aLabel.suffix) || 0) - (parseFloat(bLabel.suffix) || 0);
 };
 
 export const sortImageLabels = (labels: ImageLabel[]): ImageLabel[] => {
@@ -33,8 +33,22 @@ export type ImageLocation = {
   yLabel: ImageLabel;
 };
 
+const splitFileName = (fileName: string) => {
+  const lastIndex = fileName.lastIndexOf(".");
+
+  if (lastIndex < 0) {
+    return { name: fileName, extension: "" };
+  }
+
+  return {
+    name: fileName.slice(0, lastIndex),
+    extension: fileName.slice(lastIndex + 1),
+  };
+};
+
 export const parseImageLocation = (fileName: string): ImageLocation => {
-  const nn = fileName.split(".")[0]?.split(/[_]/);
+  const { name } = splitFileName(fileName);
+  const nn = name.split(/[_]/);
   if (!nn || nn.length < 3) {
     throw new Error("invalid file name");
   }
