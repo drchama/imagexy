@@ -34,7 +34,7 @@ export type ImageLocation = {
 };
 
 export const parseImageLocation = (fileName: string): ImageLocation => {
-  const nn = fileName.split(".")[0]?.split(/[_-]/);
+  const nn = fileName.split(".")[0]?.split(/[_]/);
   if (!nn || nn.length < 3) {
     throw new Error("invalid file name");
   }
