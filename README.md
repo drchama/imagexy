@@ -88,8 +88,7 @@ if __name__ == "__main__":
     main()
 ```
 
-Please replace `<<<ksampler_node_id>>>` with KSampler node ID, and replace `<<<save_image_node_id>>>` with Save Image node ID.
-The node ID is written in `workflow_api.json`.
+The sample script files are located in the **[scripts](./scripts)** directory.
 
 The official sample code URL is as follows.
 
